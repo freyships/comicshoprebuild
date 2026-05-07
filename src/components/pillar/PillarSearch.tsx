@@ -31,20 +31,22 @@ export function PillarSearch({ cities }: { cities: City[] }) {
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search for a city…"
-        className="w-full border border-border rounded-lg px-4 py-3 text-base focus:outline-none focus:border-primary"
+        placeholder="Search a city in this state…"
+        className="input-pulp"
       />
       {query.trim() && filtered.length > 0 && (
-        <ul className="absolute z-40 top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
-          {filtered.slice(0, 20).map((c) => (
+        <ul className="absolute z-40 top-full left-0 right-0 mt-2 panel max-h-72 overflow-y-auto p-0">
+          {filtered.slice(0, 30).map((c, i) => (
             <li key={c.slug}>
               <button
                 type="button"
                 onClick={() => handleJump(c.slug)}
-                className="w-full text-left px-4 py-2 hover:bg-surface transition-colors flex justify-between"
+                className={`w-full text-left px-4 py-3 hover:bg-pulp-yellow flex justify-between items-baseline transition-colors ${
+                  i !== filtered.length - 1 ? "border-b-2 border-ink/15" : ""
+                }`}
               >
-                <span className="font-medium">{c.name}</span>
-                <span className="text-sm text-muted">
+                <span className="display text-base">{c.name}</span>
+                <span className="font-mono text-xs text-ink-mute">
                   {c.count} {c.count === 1 ? "shop" : "shops"}
                 </span>
               </button>
@@ -53,7 +55,7 @@ export function PillarSearch({ cities }: { cities: City[] }) {
         </ul>
       )}
       {query.trim() && filtered.length === 0 && (
-        <div className="absolute z-40 top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg px-4 py-3 text-muted text-sm">
+        <div className="absolute z-40 top-full left-0 right-0 mt-2 panel px-4 py-3 text-sm italic text-ink-mute">
           No cities found matching &ldquo;{query}&rdquo;
         </div>
       )}

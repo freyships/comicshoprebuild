@@ -11,13 +11,7 @@ function Chip({
 }) {
   if (positive === null) return null;
   return (
-    <span
-      className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${
-        positive
-          ? "bg-green-50 text-green-700"
-          : "bg-gray-100 text-gray-500"
-      }`}
-    >
+    <span className={`chip ${positive ? "chip-yes" : "chip-no"}`}>
       {positive ? "✓" : "✗"} {label}
     </span>
   );
@@ -25,8 +19,6 @@ function Chip({
 
 function formatHoursCompact(hours: BusinessHoursEntry[]): string {
   if (hours.length === 0) return "";
-
-  // Group consecutive days with the same hours
   const groups: { days: string[]; time: string }[] = [];
   for (const h of hours) {
     const time = `${h.open}–${h.close}`;
@@ -37,7 +29,6 @@ function formatHoursCompact(hours: BusinessHoursEntry[]): string {
       groups.push({ days: [h.day], time });
     }
   }
-
   const abbr: Record<string, string> = {
     Monday: "Mon",
     Tuesday: "Tue",
@@ -47,7 +38,6 @@ function formatHoursCompact(hours: BusinessHoursEntry[]): string {
     Saturday: "Sat",
     Sunday: "Sun",
   };
-
   return groups
     .map((g) => {
       const first = abbr[g.days[0]] ?? g.days[0];
@@ -61,9 +51,11 @@ function formatHoursCompact(hours: BusinessHoursEntry[]): string {
 export function StoreCard({
   listing,
   attrs,
+  index,
 }: {
   listing: Listing;
   attrs: StoreAttributes;
+  index: number;
 }) {
   const addressParts = [
     listing.street_address,
@@ -82,35 +74,53 @@ export function StoreCard({
     : null;
 
   return (
-    <div className="border border-border rounded-lg overflow-hidden bg-white">
+    <article className="panel panel-hover-sm overflow-hidden">
       <div className="flex flex-col sm:flex-row">
-        {/* Image */}
-        {listing.featured_image_url && (
-          <div className="sm:w-48 sm:shrink-0 relative aspect-[4/3] sm:aspect-auto sm:h-auto">
+        {/* Image — comic-panel framed */}
+        {listing.featured_image_url ? (
+          <div className="relative sm:w-56 sm:shrink-0 aspect-[4/3] sm:aspect-auto sm:h-auto bg-paper-dim border-b-[3px] sm:border-b-0 sm:border-r-[3px] border-ink">
             <Image
               src={listing.featured_image_url}
-              alt={listing.name}
+              alt={`${listing.name} comic book store in ${listing.city}, ${listing.state}`}
               fill
               className="object-cover"
-              sizes="(max-width: 640px) 100vw, 192px"
+              sizes="(max-width: 640px) 100vw, 224px"
             />
+            <span className="absolute top-2 left-2 font-mono text-[10px] bg-ink text-paper-bright px-1.5 py-0.5 uppercase tracking-wider">
+              №{(index + 1).toString().padStart(3, "0")}
+            </span>
+          </div>
+        ) : (
+          <div className="sm:w-56 sm:shrink-0 aspect-[4/3] sm:aspect-auto bg-paper-dim border-b-[3px] sm:border-b-0 sm:border-r-[3px] border-ink flex items-center justify-center">
+            <span className="display text-3xl text-ink-faint">?</span>
           </div>
         )}
 
         {/* Content */}
-        <div className="flex-1 p-4">
-          <h3 className="text-lg font-semibold mb-1">{listing.name}</h3>
+        <div className="flex-1 p-5">
+          <header className="mb-3">
+            <h3 className="display text-xl sm:text-2xl text-ink leading-tight mb-1">
+              {listing.name}
+            </h3>
+            <p className="font-mono text-xs text-ink-mute uppercase tracking-wide">
+              {addressParts.slice(1).join(" · ")}
+            </p>
+          </header>
 
-          {/* Address */}
-          <p className="text-sm text-muted mb-2">{addressParts.join(", ")}</p>
+          {listing.street_address && (
+            <p className="text-sm text-ink-soft mb-3 italic">
+              {listing.street_address}
+            </p>
+          )}
 
-          {/* Contact row */}
-          <div className="flex flex-wrap items-center gap-3 text-sm mb-2">
+          {/* Contact + Hours row */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-mono mb-4">
             {listing.phone && (
               <a
                 href={`tel:${listing.phone}`}
-                className="text-secondary hover:underline"
+                className="text-ink hover:text-pulp-red underline-offset-4 hover:underline flex items-center gap-1.5"
               >
+                <span aria-hidden>☏</span>
                 {listing.phone}
               </a>
             )}
@@ -119,8 +129,9 @@ export function StoreCard({
                 href={listing.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-secondary hover:underline"
+                className="text-pulp-blue hover:text-pulp-red underline-offset-4 hover:underline flex items-center gap-1.5"
               >
+                <span aria-hidden>↗</span>
                 Website
               </a>
             )}
@@ -128,20 +139,23 @@ export function StoreCard({
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-secondary hover:underline"
+              className="text-pulp-blue hover:text-pulp-red underline-offset-4 hover:underline flex items-center gap-1.5"
             >
-              Get Directions
+              <span aria-hidden>⌖</span>
+              Directions
             </a>
           </div>
 
-          {/* Hours */}
           {hoursText && (
-            <p className="text-xs text-muted mb-2">{hoursText}</p>
+            <p className="text-xs text-ink-mute font-mono mb-3 leading-relaxed">
+              <span className="text-ink font-semibold">HOURS:</span> {hoursText}
+            </p>
           )}
 
-          {/* Summary */}
-          {attrs.summary && (
-            <p className="text-sm text-muted mb-2">{attrs.summary}</p>
+          {(listing.summary || attrs.summary) && (
+            <p className="text-sm text-ink-soft leading-relaxed mb-4 italic border-l-[3px] border-pulp-yellow pl-3">
+              {listing.summary ?? attrs.summary}
+            </p>
           )}
 
           {/* Attribute chips */}
@@ -151,18 +165,14 @@ export function StoreCard({
             <Chip label="Trading Cards" positive={attrs.hasTradingCards} />
             <Chip label="Manga" positive={attrs.hasManga} />
             {attrs.pricingNote && (
-              <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
-                {attrs.pricingNote}
-              </span>
+              <span className="chip chip-blue">$ {attrs.pricingNote}</span>
             )}
             {attrs.selectionNote && (
-              <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">
-                {attrs.selectionNote}
-              </span>
+              <span className="chip chip-pink">{attrs.selectionNote}</span>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 }

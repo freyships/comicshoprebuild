@@ -1,33 +1,315 @@
 @import "tailwindcss";
 
+/* ============================================
+   PULP PRESS — design tokens
+   A modern editorial comic-book aesthetic.
+   ============================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #e80d4f;
-  --primary-hover: #d70d4a;
-  --primary-light: #fef2f5;
-  --secondary: #1e73be;
-  --muted: #6b7280;
-  --border: #e0e0e0;
-  --surface: #f9fafb;
+  /* Newsprint cream backgrounds */
+  --paper: #fdf6e3;
+  --paper-dim: #f4ead0;
+  --paper-bright: #fffaef;
+
+  /* Ink for text + borders */
+  --ink: #14110f;
+  --ink-soft: #2a2520;
+  --ink-mute: #6b625a;
+  --ink-faint: #a8a092;
+
+  /* Pulp accent palette */
+  --pulp-red: #d2342f;
+  --pulp-red-dark: #a82420;
+  --pulp-blue: #1d4ed8;
+  --pulp-blue-dark: #1e3a8a;
+  --pulp-yellow: #fcd34d;
+  --pulp-yellow-dark: #f5b800;
+  --pulp-green: #15803d;
+  --pulp-pink: #f9a8d4;
+
+  /* White surfaces */
+  --surface: #ffffff;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-hover: var(--primary-hover);
-  --color-primary-light: var(--primary-light);
-  --color-secondary: var(--secondary);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
+  --color-paper: var(--paper);
+  --color-paper-dim: var(--paper-dim);
+  --color-paper-bright: var(--paper-bright);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-mute: var(--ink-mute);
+  --color-ink-faint: var(--ink-faint);
+  --color-pulp-red: var(--pulp-red);
+  --color-pulp-red-dark: var(--pulp-red-dark);
+  --color-pulp-blue: var(--pulp-blue);
+  --color-pulp-blue-dark: var(--pulp-blue-dark);
+  --color-pulp-yellow: var(--pulp-yellow);
+  --color-pulp-yellow-dark: var(--pulp-yellow-dark);
+  --color-pulp-green: var(--pulp-green);
+  --color-pulp-pink: var(--pulp-pink);
   --color-surface: var(--surface);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body), Georgia, "Times New Roman", serif;
+  font-feature-settings: "kern", "liga", "ss01";
+  /* Subtle halftone dot texture across the entire page */
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(20, 17, 15, 0.06) 1px, transparent 0);
+  background-size: 14px 14px;
+}
+
+/* Selection */
+::selection {
+  background: var(--pulp-yellow);
+  color: var(--ink);
+}
+
+/* Focus */
+:focus-visible {
+  outline: 3px solid var(--pulp-yellow);
+  outline-offset: 3px;
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+/* Comic panel — thick black border + hard offset shadow */
+.panel {
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 0 var(--ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.panel-sm {
+  background: var(--surface);
+  border: 2.5px solid var(--ink);
+  box-shadow: 4px 4px 0 0 var(--ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.panel-hover:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0 0 var(--ink);
+}
+
+.panel-hover-sm:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 5.5px 5.5px 0 0 var(--ink);
+}
+
+/* Action button — bold, blocky, with hard shadow */
+.btn-pulp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 0.875rem;
+  letter-spacing: 0.03em;
+  padding: 0.875rem 1.5rem;
+  background: var(--pulp-red);
+  color: white;
+  border: 3px solid var(--ink);
+  box-shadow: 5px 5px 0 0 var(--ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-pulp:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 0 var(--ink);
+}
+
+.btn-pulp:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 0 var(--ink);
+}
+
+.btn-pulp-yellow {
+  background: var(--pulp-yellow);
+  color: var(--ink);
+}
+
+.btn-pulp-blue {
+  background: var(--pulp-blue);
+  color: white;
+}
+
+.btn-pulp-white {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* Comic chip / badge */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.65rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--surface);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.chip-yes {
+  background: var(--pulp-yellow);
+  color: var(--ink);
+}
+
+.chip-no {
+  background: var(--paper-dim);
+  color: var(--ink-mute);
+}
+
+.chip-blue {
+  background: var(--pulp-blue);
+  color: white;
+}
+
+.chip-pink {
+  background: var(--pulp-pink);
+  color: var(--ink);
+}
+
+.chip-green {
+  background: #d1fae5;
+  color: var(--pulp-green);
+}
+
+/* Bold display heading */
+.display {
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: -0.005em;
+  line-height: 0.95;
+}
+
+/* Halftone overlay */
+.halftone {
+  position: relative;
+}
+
+.halftone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 1.5px 1.5px, rgba(20, 17, 15, 0.13) 1px, transparent 0);
+  background-size: 7px 7px;
+  pointer-events: none;
+}
+
+/* "Sticker" label — rotated */
+.sticker {
+  display: inline-block;
+  font-family: var(--font-display), sans-serif;
+  background: var(--pulp-yellow);
+  color: var(--ink);
+  border: 2.5px solid var(--ink);
+  padding: 0.35rem 0.8rem;
+  box-shadow: 3px 3px 0 0 var(--ink);
+  transform: rotate(-2deg);
+  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+}
+
+/* Star burst — used as accent behind/on key callouts */
+.starburst {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pulp-red);
+  color: white;
+  border: 2.5px solid var(--ink);
+  font-family: var(--font-display), sans-serif;
+  clip-path: polygon(
+    50% 0%, 61% 35%, 98% 35%, 68% 57%,
+    79% 91%, 50% 70%, 21% 91%, 32% 57%,
+    2% 35%, 39% 35%
+  );
+  width: 80px;
+  height: 80px;
+  font-size: 0.85rem;
+  text-align: center;
+  line-height: 1;
+}
+
+/* Underline accent */
+.ink-underline {
+  background-image: linear-gradient(
+    to right,
+    var(--pulp-yellow) 0%,
+    var(--pulp-yellow) 100%
+  );
+  background-size: 100% 35%;
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+  padding: 0 0.1em;
+}
+
+/* Diagonal red banner / tape */
+.tape {
+  position: relative;
+  display: inline-block;
+  background: var(--pulp-red);
+  color: white;
+  padding: 0.4rem 1rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  border: 2px solid var(--ink);
+  transform: rotate(-1.5deg);
+}
+
+/* Form inputs */
+.input-pulp {
+  width: 100%;
+  background: var(--surface);
+  border: 2.5px solid var(--ink);
+  padding: 0.85rem 1rem;
+  font-family: var(--font-body), serif;
+  font-size: 1rem;
+  box-shadow: 4px 4px 0 0 var(--ink);
+  transition: box-shadow 0.12s ease, transform 0.12s ease;
+}
+
+.input-pulp:focus {
+  outline: none;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 0 var(--pulp-red);
+}
+
+/* Section divider — thick ink rule */
+.ink-rule {
+  height: 4px;
+  background: var(--ink);
+  border: none;
+}
+
+/* Marquee-ish ticker for accent strips */
+.ticker {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  padding: 0.5rem 1rem;
+  text-transform: uppercase;
 }

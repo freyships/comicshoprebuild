@@ -22,14 +22,12 @@ export function ContactForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("sending");
-
     try {
       const res = await fetch("/api/contact/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
       if (res.ok) {
         setStatus("sent");
         setFormData({ name: "", email: "", subject: "", message: "" });
@@ -43,18 +41,18 @@ export function ContactForm() {
 
   if (status === "sent") {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-        <p className="text-green-800 font-medium text-lg">
-          Thanks for reaching out!
-        </p>
-        <p className="text-green-700 mt-2">
-          We&apos;ll get back to you as soon as possible.
+      <div className="text-center py-6">
+        <p className="display text-3xl text-pulp-red mb-3">★ KAPOW! ★</p>
+        <p className="display text-xl text-ink mb-2">Message sent.</p>
+        <p className="text-ink-soft italic mb-6">
+          We'll write back as soon as possible.
         </p>
         <button
+          type="button"
           onClick={() => setStatus("idle")}
-          className="mt-4 text-primary hover:underline text-sm"
+          className="btn-pulp btn-pulp-white"
         >
-          Send another message
+          Send another →
         </button>
       </div>
     );
@@ -62,10 +60,7 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium mb-1">
-          Name
-        </label>
+      <Field label="Your Name" htmlFor="name">
         <input
           type="text"
           id="name"
@@ -73,14 +68,11 @@ export function ContactForm() {
           required
           value={formData.name}
           onChange={handleChange}
-          className="w-full border border-border rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary"
+          className="input-pulp"
         />
-      </div>
+      </Field>
 
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium mb-1">
-          Email
-        </label>
+      <Field label="Email Address" htmlFor="email">
         <input
           type="email"
           id="email"
@@ -88,65 +80,82 @@ export function ContactForm() {
           required
           value={formData.email}
           onChange={handleChange}
-          className="w-full border border-border rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary"
+          className="input-pulp"
         />
-      </div>
+      </Field>
 
-      <div>
-        <label htmlFor="subject" className="block text-sm font-medium mb-1">
-          Subject
-        </label>
+      <Field label="Subject" htmlFor="subject">
         <select
           id="subject"
           name="subject"
           required
           value={formData.subject}
           onChange={handleChange}
-          className="w-full border border-border rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary"
+          className="input-pulp"
         >
-          <option value="">Select a topic...</option>
-          <option value="listing-error">Report a Listing Error</option>
-          <option value="new-store">Suggest a New Store</option>
-          <option value="claim-listing">Claim a Listing</option>
-          <option value="general">General Question</option>
+          <option value="">Pick a topic…</option>
+          <option value="listing-error">Report a listing error</option>
+          <option value="new-store">Suggest a new store</option>
+          <option value="claim-listing">Claim a listing</option>
+          <option value="general">General question</option>
           <option value="other">Other</option>
         </select>
-      </div>
+      </Field>
 
-      <div>
-        <label htmlFor="message" className="block text-sm font-medium mb-1">
-          Message
-        </label>
+      <Field label="Message" htmlFor="message">
         <textarea
           id="message"
           name="message"
           required
-          rows={5}
+          rows={6}
           value={formData.message}
           onChange={handleChange}
-          className="w-full border border-border rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary resize-y"
+          className="input-pulp resize-y"
         />
+      </Field>
+
+      <div className="flex flex-wrap items-center gap-4 pt-2">
+        <button
+          type="submit"
+          disabled={status === "sending"}
+          className="btn-pulp disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {status === "sending" ? "Sending…" : "Send Message →"}
+        </button>
+        {status === "error" && (
+          <p className="text-sm text-pulp-red font-mono">
+            Something went wrong. Email us directly at{" "}
+            <a
+              href="mailto:comicbookstorefinder@gmail.com"
+              className="underline underline-offset-2"
+            >
+              comicbookstorefinder@gmail.com
+            </a>
+          </p>
+        )}
       </div>
-
-      <button
-        type="submit"
-        disabled={status === "sending"}
-        className="bg-primary text-white px-6 py-2.5 rounded-lg font-medium hover:bg-primary-hover transition-colors disabled:opacity-50"
-      >
-        {status === "sending" ? "Sending..." : "Send Message"}
-      </button>
-
-      {status === "error" && (
-        <p className="text-red-600 text-sm">
-          Something went wrong. Please email us directly at{" "}
-          <a
-            href="mailto:comicbookstorefinder@gmail.com"
-            className="underline"
-          >
-            comicbookstorefinder@gmail.com
-          </a>
-        </p>
-      )}
     </form>
+  );
+}
+
+function Field({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label
+        htmlFor={htmlFor}
+        className="block display text-xs uppercase tracking-widest text-ink mb-2"
+      >
+        {label}
+      </label>
+      {children}
+    </div>
   );
 }

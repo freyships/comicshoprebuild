@@ -8,77 +8,157 @@ import { useState } from "react";
 export function Header() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    const trimmed = query.trim();
-    if (!trimmed) return;
-
-    // Redirect to find-by-state; in-page search handles city filtering
+    if (!query.trim()) return;
     router.push("/find-comic-shops-by-state/");
     setQuery("");
+    setMenuOpen(false);
   }
 
   return (
-    <header className="border-b border-border bg-white sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-        <Link href="/" className="shrink-0">
-          <Image
-            src="/logo.svg"
-            alt="Comic Book Store Finder"
-            width={600}
-            height={150}
-            className="h-14 w-auto"
-          />
-        </Link>
-
-        <form onSubmit={handleSearch} className="flex-1 max-w-md hidden sm:flex">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by state or city…"
-            className="flex-1 border border-border rounded-l px-3 py-2 text-sm focus:outline-none focus:border-primary"
-          />
-          <button
-            type="submit"
-            className="bg-primary text-white px-4 py-2 rounded-r text-sm hover:bg-primary-hover transition-colors"
-          >
-            Search
-          </button>
-        </form>
-
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-          <Link href="/find-comic-shops-by-state/" className="text-foreground hover:text-primary transition-colors">
-            Find by State
-          </Link>
-          <Link href="/about/" className="text-foreground hover:text-primary transition-colors">
-            About Us
-          </Link>
-          <Link href="/contact/" className="text-foreground hover:text-primary transition-colors">
-            Contact
-          </Link>
-        </nav>
+    <>
+      {/* Top ticker strip */}
+      <div className="ticker text-center">
+        ★ ISSUE 001 ★ COAST-TO-COAST COMIC SHOP DIRECTORY ★ EST. 2024 ★
       </div>
 
-      {/* Mobile search */}
-      <div className="sm:hidden px-4 pb-3">
-        <form onSubmit={handleSearch} className="flex">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by state or city…"
-            className="flex-1 border border-border rounded-l px-3 py-2 text-sm focus:outline-none focus:border-primary"
-          />
-          <button
-            type="submit"
-            className="bg-primary text-white px-4 py-2 rounded-r text-sm hover:bg-primary-hover transition-colors"
+      <header className="bg-paper-bright border-b-[3px] border-ink sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+          <Link href="/" className="shrink-0 flex items-center gap-3">
+            <div className="bg-pulp-red border-[2.5px] border-ink shadow-[3px_3px_0_0_var(--ink)] w-11 h-11 flex items-center justify-center rotate-[-3deg]">
+              <span className="display text-white text-xl">CB</span>
+            </div>
+            <span className="display text-xl sm:text-2xl text-ink leading-none">
+              Comic Book
+              <br />
+              <span className="text-pulp-red">Stores</span>
+            </span>
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            <NavLink href="/find-comic-shops-by-state/">Browse States</NavLink>
+            <NavLink href="/about/">About</NavLink>
+            <NavLink href="/contact/">Contact</NavLink>
+          </nav>
+
+          {/* Desktop search */}
+          <form
+            onSubmit={handleSearch}
+            className="hidden lg:flex items-center"
           >
-            Search
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Find a state…"
+              className="bg-paper border-[2.5px] border-ink px-3 py-2 text-sm font-mono focus:outline-none focus:bg-paper-bright w-44"
+            />
+            <button
+              type="submit"
+              className="bg-ink text-paper-bright border-[2.5px] border-ink border-l-0 px-3 py-2 hover:bg-pulp-red transition-colors"
+              aria-label="Search"
+            >
+              <SearchIcon />
+            </button>
+          </form>
+
+          {/* Mobile menu */}
+          <button
+            type="button"
+            onClick={() => setMenuOpen((m) => !m)}
+            className="md:hidden border-[2.5px] border-ink bg-pulp-yellow shadow-[3px_3px_0_0_var(--ink)] p-2"
+            aria-label="Menu"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              {menuOpen ? (
+                <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
+              ) : (
+                <>
+                  <path d="M4 7h16" strokeLinecap="round" />
+                  <path d="M4 12h16" strokeLinecap="round" />
+                  <path d="M4 17h16" strokeLinecap="round" />
+                </>
+              )}
+            </svg>
           </button>
-        </form>
-      </div>
-    </header>
+        </div>
+
+        {menuOpen && (
+          <div className="md:hidden border-t-[3px] border-ink bg-paper-bright px-4 py-4 space-y-3">
+            <form onSubmit={handleSearch} className="flex">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Find a state…"
+                className="flex-1 bg-paper border-[2.5px] border-ink px-3 py-2.5 text-sm font-mono"
+              />
+              <button
+                type="submit"
+                className="bg-ink text-paper-bright border-[2.5px] border-ink border-l-0 px-4"
+                aria-label="Search"
+              >
+                <SearchIcon />
+              </button>
+            </form>
+            <nav className="flex flex-col gap-1">
+              <MobileLink href="/find-comic-shops-by-state/" onClick={() => setMenuOpen(false)}>
+                Browse States
+              </MobileLink>
+              <MobileLink href="/about/" onClick={() => setMenuOpen(false)}>
+                About
+              </MobileLink>
+              <MobileLink href="/contact/" onClick={() => setMenuOpen(false)}>
+                Contact
+              </MobileLink>
+            </nav>
+          </div>
+        )}
+      </header>
+    </>
+  );
+}
+
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="display text-xs text-ink px-3 py-2 hover:bg-pulp-yellow border-2 border-transparent hover:border-ink transition-colors uppercase tracking-wider"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function MobileLink({
+  href,
+  children,
+  onClick,
+}: {
+  href: string;
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="display text-sm text-ink px-3 py-2.5 hover:bg-pulp-yellow border-2 border-transparent hover:border-ink uppercase tracking-wider"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M21 21l-5-5" strokeLinecap="round" />
+    </svg>
   );
 }

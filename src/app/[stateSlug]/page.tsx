@@ -6,14 +6,17 @@ import { fetchAllListings } from "@/lib/queries";
 import type { Listing } from "@/lib/types";
 import { toStateUrl, fromStateUrl } from "@/lib/state-slugs";
 import { parseDescription } from "@/lib/parse-description";
-import { breadcrumbSchema, itemListSchema } from "@/lib/schema";
+import {
+  breadcrumbSchema,
+  itemListSchema,
+  collectionPageSchema,
+} from "@/lib/schema";
 import { PillarSearch } from "@/components/pillar/PillarSearch";
 import { TableOfContents } from "@/components/pillar/TableOfContents";
 import { StoreCard } from "@/components/pillar/StoreCard";
 
 const SITE_URL = "https://comicbookstores.co";
 
-// Only allow valid state slugs — 404 everything else
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
@@ -31,36 +34,52 @@ export async function generateMetadata({
   const dbSlug = fromStateUrl(stateSlug);
   if (!dbSlug) return {};
 
-  // Fetch state name + count
-  const { data } = await supabase
+  // Pull state name + per-city counts in one query
+  const { data: rows } = await supabase
     .from("listings")
-    .select("state")
-    .eq("state_slug", dbSlug)
-    .limit(1)
-    .single();
-
-  const stateName = data?.state ?? dbSlug.replace(/-/g, " ");
-  const { count } = await supabase
-    .from("listings")
-    .select("*", { count: "exact", head: true })
+    .select("state, city")
     .eq("state_slug", dbSlug);
 
-  const title = `Comic Book Shops in ${stateName}`;
-  const description = `Browse ${count ?? 0} comic book stores in ${stateName}. Find hours, directions, pricing, selection, and more for every shop.`;
+  if (!rows || rows.length === 0) return {};
+
+  const stateName = rows[0].state;
+  const total = rows.length;
+
+  // Top 3 cities by count, for the meta description
+  const cityCounts = new Map<string, number>();
+  for (const r of rows) {
+    cityCounts.set(r.city, (cityCounts.get(r.city) ?? 0) + 1);
+  }
+  const topCities = [...cityCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([city]) => city);
+
+  // Title: kept short for non short states; "Comic Book Shops in {state}" only.
+  // For long state names (e.g. District of Columbia), use a tighter format
+  const baseTitle =
+    stateName.length > 18
+      ? `Comic Book Shops in ${stateName}`
+      : `Comic Book Shops in ${stateName} (${total})`;
+
+  const description = topCities.length >= 2
+    ? `Browse ${total} comic book stores in ${stateName}, including shops in ${topCities.slice(0, -1).join(", ")} and ${topCities[topCities.length - 1]}. Hours, addresses, and store details.`
+    : `Browse ${total} comic book stores in ${stateName}. Hours, addresses, store details, and more for every comic shop.`;
+
   const canonical = `${SITE_URL}/${stateSlug}/`;
 
   return {
-    title,
+    title: baseTitle,
     description,
     alternates: { canonical },
     openGraph: {
-      title,
+      title: baseTitle,
       description,
       url: canonical,
       siteName: "Comic Book Store Finder",
       type: "website",
     },
-    twitter: { card: "summary", title, description },
+    twitter: { card: "summary", title: baseTitle, description },
   };
 }
 
@@ -79,7 +98,6 @@ export default async function StatePillarPage({
   const dbSlug = fromStateUrl(stateSlug);
   if (!dbSlug) notFound();
 
-  // Fetch all listings for this state
   const PAGE_SIZE = 1000;
   const all: Listing[] = [];
   let from = 0;
@@ -102,7 +120,6 @@ export default async function StatePillarPage({
 
   const stateName = all[0].state;
 
-  // Group by city
   const cityMap = new Map<string, CityGroup>();
   for (const l of all) {
     if (!cityMap.has(l.city_slug)) {
@@ -116,28 +133,48 @@ export default async function StatePillarPage({
   }
   const cityGroups = [...cityMap.values()];
 
-  // City list for search + TOC
   const cities = cityGroups.map((g) => ({
     name: g.city,
     slug: g.citySlug,
     count: g.listings.length,
   }));
 
-  // Breadcrumbs
   const breadcrumbs = [
     { name: "Home", url: "/" },
     { name: "Find by State", url: "/find-comic-shops-by-state/" },
     { name: `Comic Book Shops in ${stateName}`, url: `/${stateSlug}/` },
   ];
 
-  // ItemList schema
   const listItems = all.map((l) => ({
     name: l.name,
     url: `/${stateSlug}/#${l.city_slug}`,
+    city: l.city,
+    state: l.state,
+    zip: l.zip_code,
+    street: l.street_address,
+    phone: l.phone,
+    website: l.website,
+    image: l.featured_image_url,
   }));
+
+  const pageDescription = `Browse ${all.length} comic book stores in ${stateName} across ${cityGroups.length} cities. Hours, addresses, and store details.`;
+
+  let storeIndex = 0;
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            collectionPageSchema({
+              name: `Comic Book Shops in ${stateName}`,
+              description: pageDescription,
+              url: `${SITE_URL}/${stateSlug}/`,
+            })
+          ),
+        }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -153,75 +190,118 @@ export default async function StatePillarPage({
         }}
       />
 
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <nav className="text-sm text-muted mb-4">
-          <Link href="/" className="hover:text-primary">
-            Home
-          </Link>
-          <span className="mx-1">»</span>
-          <Link
-            href="/find-comic-shops-by-state/"
-            className="hover:text-primary"
-          >
-            Find by State
-          </Link>
-          <span className="mx-1">»</span>
-          <span className="text-foreground">{stateName}</span>
-        </nav>
+      {/* Masthead */}
+      <section className="border-b-[3px] border-ink bg-paper-bright">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+          {/* Breadcrumb */}
+          <nav className="font-mono text-xs text-ink-mute mb-6 uppercase">
+            <Link href="/" className="hover:text-pulp-red">Home</Link>
+            <span className="mx-2">/</span>
+            <Link href="/find-comic-shops-by-state/" className="hover:text-pulp-red">
+              States
+            </Link>
+            <span className="mx-2">/</span>
+            <span className="text-ink">{stateName}</span>
+          </nav>
 
-        {/* H1 */}
-        <h1 className="text-3xl font-bold mb-2">
-          Comic Book Shops in {stateName}
-        </h1>
-        <p className="text-muted mb-6">
-          Browse {all.length.toLocaleString()} comic book{" "}
-          {all.length === 1 ? "store" : "stores"} across{" "}
-          {cityGroups.length.toLocaleString()}{" "}
-          {cityGroups.length === 1 ? "city" : "cities"} in {stateName}.
-        </p>
+          <div className="grid lg:grid-cols-12 gap-8 items-end">
+            <div className="lg:col-span-8">
+              <p className="display text-xs uppercase tracking-widest text-pulp-red mb-3">
+                Vol. {stateName} · Field Guide
+              </p>
+              <h1 className="display text-4xl sm:text-5xl lg:text-6xl text-ink leading-[0.95] mb-4">
+                Comic Book Shops
+                <br />
+                in <span className="ink-underline">{stateName}.</span>
+              </h1>
+              <p className="text-lg text-ink-soft italic max-w-2xl leading-relaxed">
+                {all.length.toLocaleString()} cataloged{" "}
+                {all.length === 1 ? "shop" : "shops"} across{" "}
+                {cityGroups.length.toLocaleString()}{" "}
+                {cityGroups.length === 1 ? "city" : "cities"}. Search below or
+                scroll the directory.
+              </p>
+            </div>
 
-        {/* Search */}
-        <div className="mb-6">
-          <PillarSearch cities={cities} />
+            <div className="lg:col-span-4 flex lg:justify-end">
+              <div className="panel halftone bg-pulp-yellow p-5 text-center rotate-[-2deg] inline-block">
+                <p className="font-mono text-[10px] uppercase tracking-widest mb-1">
+                  Shops
+                </p>
+                <p className="display text-5xl text-ink leading-none mb-1">
+                  {all.length}
+                </p>
+                <p className="font-mono text-[10px] uppercase tracking-widest">
+                  in this state
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
+      </section>
 
-        {/* Table of Contents */}
-        <div className="mb-8">
+      {/* Search + TOC */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sticky top-[58px] z-30 bg-paper">
+        <div className="grid gap-4 md:grid-cols-[2fr,1fr]">
+          <PillarSearch cities={cities} />
           <TableOfContents cities={cities} />
         </div>
+      </div>
 
-        {/* City Sections */}
-        {cityGroups.map((group) => (
-          <section key={group.citySlug} id={group.citySlug} className="mb-10 scroll-mt-24">
-            <h2 className="text-2xl font-bold mb-1">
-              Comic Book Shops in {group.city}
-            </h2>
-            <p className="text-sm text-muted mb-4">
-              {group.listings.length}{" "}
-              {group.listings.length === 1 ? "shop" : "shops"} in {group.city},{" "}
-              {stateName}
-            </p>
-            <div className="grid gap-4">
-              {group.listings.map((listing) => (
-                <StoreCard
-                  key={listing.id}
-                  listing={listing}
-                  attrs={parseDescription(listing.description)}
-                />
-              ))}
+      {/* City Sections */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
+        {cityGroups.map((group, gi) => (
+          <section
+            key={group.citySlug}
+            id={group.citySlug}
+            className="mb-14 scroll-mt-32"
+          >
+            {/* City header */}
+            <header className="mb-6 pb-4 border-b-[3px] border-ink relative">
+              <p className="font-mono text-[11px] text-ink-mute uppercase tracking-widest mb-1">
+                Section №{(gi + 1).toString().padStart(2, "0")}
+              </p>
+              <h2 className="display text-2xl sm:text-3xl lg:text-4xl text-ink leading-tight">
+                Comic Book Shops in{" "}
+                <span className="text-pulp-red">{group.city}</span>
+              </h2>
+              <p className="font-mono text-xs text-ink-mute uppercase tracking-wide mt-1">
+                {group.listings.length}{" "}
+                {group.listings.length === 1 ? "shop" : "shops"} · {group.city},{" "}
+                {stateName}
+              </p>
+            </header>
+
+            <div className="grid gap-5">
+              {group.listings.map((listing) => {
+                const idx = storeIndex++;
+                return (
+                  <StoreCard
+                    key={listing.id}
+                    listing={listing}
+                    attrs={parseDescription(listing.description)}
+                    index={idx}
+                  />
+                );
+              })}
             </div>
           </section>
         ))}
 
-        {/* Back to top */}
-        <div className="text-center py-8 border-t border-border">
-          <a
-            href="#"
-            className="text-sm text-primary hover:underline"
-          >
-            ↑ Back to top
-          </a>
+        {/* End-of-issue marker */}
+        <div className="text-center py-12 border-t-[3px] border-ink">
+          <p className="display text-3xl text-ink mb-2">— END OF ISSUE —</p>
+          <p className="font-mono text-xs text-ink-mute uppercase tracking-widest mb-6">
+            That's every shop we have for {stateName}.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link href="/find-comic-shops-by-state/" className="btn-pulp btn-pulp-white">
+              ← Browse Other States
+            </Link>
+            <a href="#" className="btn-pulp btn-pulp-yellow">
+              ↑ Back to Top
+            </a>
+          </div>
         </div>
       </div>
     </>

@@ -23,6 +23,7 @@ export interface Listing {
   website: string | null;
   business_hours: BusinessHoursEntry[] | null;
   featured_image_url: string | null;
+  summary: string | null;
   created_at: string;
   updated_at: string;
 }
