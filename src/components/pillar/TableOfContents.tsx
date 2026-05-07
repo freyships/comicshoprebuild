@@ -32,7 +32,10 @@ export function TableOfContents({ cities }: { cities: City[] }) {
         </span>
       </button>
       {open && (
-        <div className="border-t-[2.5px] border-ink p-4 grid gap-x-4 gap-y-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 bg-paper">
+        <div
+          className="border-t-[2.5px] border-ink p-4 grid gap-x-4 gap-y-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 bg-paper overflow-y-auto overscroll-contain"
+          style={{ maxHeight: "min(60vh, 480px)" }}
+        >
           {cities.map((c) => (
             <a
               key={c.slug}
