@@ -120,6 +120,21 @@ export default async function StatePillarPage({
 
   const stateName = all[0].state;
 
+  // Pull every state for the cross-state internal-link section at the bottom
+  const allStateRows = await fetchAllListings<"state" | "state_slug">(
+    "state, state_slug"
+  );
+  const stateCounts = new Map<string, { state: string; count: number }>();
+  for (const r of allStateRows) {
+    const ex = stateCounts.get(r.state_slug);
+    if (ex) ex.count++;
+    else stateCounts.set(r.state_slug, { state: r.state, count: 1 });
+  }
+  const otherStates = [...stateCounts.entries()]
+    .filter(([slug]) => slug !== dbSlug)
+    .map(([slug, v]) => ({ slug, ...v }))
+    .sort((a, b) => a.state.localeCompare(b.state));
+
   const cityMap = new Map<string, CityGroup>();
   for (const l of all) {
     if (!cityMap.has(l.city_slug)) {
@@ -288,15 +303,46 @@ export default async function StatePillarPage({
           </section>
         ))}
 
+        {/* Other states — internal linking */}
+        <section className="mt-16 pt-10 border-t-[3px] border-ink">
+          <div className="mb-8">
+            <p className="display text-xs uppercase tracking-widest text-pulp-red mb-2">
+              Keep Browsing
+            </p>
+            <h2 className="display text-2xl sm:text-3xl text-ink leading-tight mb-2">
+              Comic Book Shops in Other States
+            </h2>
+            <p className="text-sm text-ink-mute italic">
+              Done with {stateName}? Hop to a neighboring state or anywhere else in the country.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {otherStates.map((s) => (
+              <Link
+                key={s.slug}
+                href={`/${toStateUrl(s.slug)}/`}
+                className="panel-sm panel-hover-sm p-3 flex justify-between items-baseline group"
+              >
+                <span className="display text-sm text-ink group-hover:text-pulp-red transition-colors">
+                  {s.state}
+                </span>
+                <span className="font-mono text-[10px] text-ink-mute">
+                  {s.count}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         {/* End-of-issue marker */}
-        <div className="text-center py-12 border-t-[3px] border-ink">
-          <p className="display text-3xl text-ink mb-2">— END OF ISSUE —</p>
+        <div className="text-center py-12 mt-12 border-t-[3px] border-ink">
+          <p className="display text-3xl text-ink mb-2">END OF ISSUE</p>
           <p className="font-mono text-xs text-ink-mute uppercase tracking-widest mb-6">
             That's every shop we have for {stateName}.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/find-comic-shops-by-state/" className="btn-pulp btn-pulp-white">
-              ← Browse Other States
+              ← Browse All States
             </Link>
             <a href="#" className="btn-pulp btn-pulp-yellow">
               ↑ Back to Top

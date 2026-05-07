@@ -39,8 +39,7 @@ export default async function HomePage() {
                 <span className="ink-underline text-pulp-red">in America.</span>
               </h1>
               <p className="text-lg sm:text-xl text-ink-soft max-w-xl mb-8 italic leading-relaxed">
-                A coast-to-coast directory of brick-and-mortar comic stores —
-                hand-cataloged, easy to browse, no algorithm slop.
+                A coast to coast directory of brick and mortar comic stores. Hand cataloged, easy to browse, no algorithm slop.
               </p>
               <HomeSearch />
               <p className="mt-4 text-sm text-ink-mute font-mono">
@@ -135,8 +134,7 @@ export default async function HomePage() {
                 <span className="text-pulp-red">You go visit.</span>
               </h2>
               <p className="text-lg text-ink-soft leading-relaxed mb-4 italic">
-                Every shop in our directory was indexed by hand — addresses
-                verified, hours noted, vibe summarized.
+                Every shop in our directory was indexed by hand. Addresses verified, hours noted, vibe summarized.
               </p>
               <p className="text-base text-ink-mute leading-relaxed">
                 No paid placements. No fake reviews. No three-paragraph SEO
@@ -147,27 +145,38 @@ export default async function HomePage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <FeatureCard
-                color="bg-pulp-red"
-                title="Graphic Novels"
-                copy="Marvel, DC, Image, indie — every shelf cataloged."
-              />
-              <FeatureCard
-                color="bg-pulp-blue"
-                title="Collectibles"
-                copy="Funko Pops, statues, action figures, vintage."
-                lightText
-              />
-              <FeatureCard
-                color="bg-pulp-yellow"
-                title="Trading Cards"
-                copy="Pokémon, Magic, Yu-Gi-Oh, sports cards, you name it."
-              />
-              <FeatureCard
-                color="bg-paper-bright"
-                title="Manga &amp; Anime"
-                copy="From Shonen Jump to seinen — find your next read."
-              />
+              <div className="panel p-5 bg-pulp-red text-white">
+                <p className="display text-base mb-2 leading-tight">
+                  Graphic Novels
+                </p>
+                <p className="text-sm leading-snug text-white/95">
+                  Marvel, DC, Image, indie. Every shelf cataloged.
+                </p>
+              </div>
+              <div className="panel p-5 bg-pulp-blue text-white">
+                <p className="display text-base mb-2 leading-tight">
+                  Vintage Back Issues
+                </p>
+                <p className="text-sm leading-snug text-white/95">
+                  Long boxes deep with first appearances and Bronze Age finds.
+                </p>
+              </div>
+              <div className="panel p-5 bg-pulp-yellow text-ink">
+                <p className="display text-base mb-2 leading-tight">
+                  Trading Cards
+                </p>
+                <p className="text-sm leading-snug text-ink-soft">
+                  Pokémon, Magic, Yu Gi Oh, and sports card breakers.
+                </p>
+              </div>
+              <div className="panel p-5 bg-paper-bright text-ink">
+                <p className="display text-base mb-2 leading-tight">
+                  Manga &amp; Anime
+                </p>
+                <p className="text-sm leading-snug text-ink-soft">
+                  From Shonen Jump to seinen with deep import sections.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -193,23 +202,3 @@ export default async function HomePage() {
   );
 }
 
-function FeatureCard({
-  color,
-  title,
-  copy,
-  lightText,
-}: {
-  color: string;
-  title: string;
-  copy: string;
-  lightText?: boolean;
-}) {
-  return (
-    <div className={`panel p-5 ${color} ${lightText ? "text-white" : "text-ink"}`}>
-      <p className="display text-base mb-2 leading-tight">{title}</p>
-      <p className={`text-sm leading-snug ${lightText ? "text-white/90" : "text-ink-soft"}`}>
-        {copy}
-      </p>
-    </div>
-  );
-}

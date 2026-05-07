@@ -2,21 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { CitySearch } from "@/components/CitySearch";
 
 export function Header() {
-  const router = useRouter();
-  const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!query.trim()) return;
-    router.push("/find-comic-shops-by-state/");
-    setQuery("");
-    setMenuOpen(false);
-  }
 
   return (
     <>
@@ -46,27 +36,11 @@ export function Header() {
           </nav>
 
           {/* Desktop search */}
-          <form
-            onSubmit={handleSearch}
-            className="hidden lg:flex items-center"
-          >
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Find a state…"
-              className="bg-paper border-[2.5px] border-ink px-3 py-2 text-sm font-mono focus:outline-none focus:bg-paper-bright w-44"
-            />
-            <button
-              type="submit"
-              className="bg-ink text-paper-bright border-[2.5px] border-ink border-l-0 px-3 py-2 hover:bg-pulp-red transition-colors"
-              aria-label="Search"
-            >
-              <SearchIcon />
-            </button>
-          </form>
+          <div className="hidden lg:block w-56">
+            <CitySearch variant="header" placeholder="Find a city" />
+          </div>
 
-          {/* Mobile menu */}
+          {/* Mobile menu button */}
           <button
             type="button"
             onClick={() => setMenuOpen((m) => !m)}
@@ -89,22 +63,7 @@ export function Header() {
 
         {menuOpen && (
           <div className="md:hidden border-t-[3px] border-ink bg-paper-bright px-4 py-4 space-y-3">
-            <form onSubmit={handleSearch} className="flex">
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Find a state…"
-                className="flex-1 bg-paper border-[2.5px] border-ink px-3 py-2.5 text-sm font-mono"
-              />
-              <button
-                type="submit"
-                className="bg-ink text-paper-bright border-[2.5px] border-ink border-l-0 px-4"
-                aria-label="Search"
-              >
-                <SearchIcon />
-              </button>
-            </form>
+            <CitySearch variant="header" placeholder="Find a city" />
             <nav className="flex flex-col gap-1">
               <MobileLink href="/find-comic-shops-by-state/" onClick={() => setMenuOpen(false)}>
                 Browse States
@@ -151,14 +110,5 @@ function MobileLink({
     >
       {children}
     </Link>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <circle cx="11" cy="11" r="7" />
-      <path d="M21 21l-5-5" strokeLinecap="round" />
-    </svg>
   );
 }
