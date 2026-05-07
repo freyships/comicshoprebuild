@@ -81,18 +81,21 @@ body {
   outline-offset: 3px;
 }
 
-/* ===== UTILITY CLASSES ===== */
+/* ===== COMPONENT CLASSES =====
+   Wrapped in @layer components so Tailwind utility classes
+   (e.g. bg-pulp-red) can override these defaults via the cascade. */
+@layer components {
 
 /* Comic panel — thick black border + hard offset shadow */
 .panel {
-  background: var(--surface);
+  background-color: var(--surface);
   border: 3px solid var(--ink);
   box-shadow: 6px 6px 0 0 var(--ink);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .panel-sm {
-  background: var(--surface);
+  background-color: var(--surface);
   border: 2.5px solid var(--ink);
   box-shadow: 4px 4px 0 0 var(--ink);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
@@ -313,3 +316,5 @@ body {
   padding: 0.5rem 1rem;
   text-transform: uppercase;
 }
+
+} /* end @layer components */

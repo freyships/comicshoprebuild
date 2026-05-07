@@ -14,6 +14,7 @@ import {
 import { PillarSearch } from "@/components/pillar/PillarSearch";
 import { TableOfContents } from "@/components/pillar/TableOfContents";
 import { StoreCard } from "@/components/pillar/StoreCard";
+import { BackToTop } from "@/components/pillar/BackToTop";
 
 const SITE_URL = "https://comicbookstores.co";
 
@@ -333,6 +334,8 @@ export default async function StatePillarPage({
             ))}
           </div>
         </section>
+
+        <BackToTop />
 
         {/* End-of-issue marker */}
         <div className="text-center py-12 mt-12 border-t-[3px] border-ink">

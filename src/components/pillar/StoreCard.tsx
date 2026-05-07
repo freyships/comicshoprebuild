@@ -74,7 +74,10 @@ export function StoreCard({
     : null;
 
   return (
-    <article className="panel panel-hover-sm overflow-hidden">
+    <article
+      id={`shop-${listing.slug}`}
+      className="panel panel-hover-sm overflow-hidden scroll-mt-32"
+    >
       <div className="flex flex-col sm:flex-row">
         {/* Image — comic-panel framed */}
         {listing.featured_image_url ? (

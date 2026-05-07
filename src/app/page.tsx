@@ -26,7 +26,7 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero ============================================ */}
-      <section className="relative overflow-hidden">
+      <section className="relative">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-20">
           <div className="grid lg:grid-cols-12 gap-10 items-center">
             <div className="lg:col-span-7 relative">
