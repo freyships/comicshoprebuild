@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Bungee, Newsreader, JetBrains_Mono } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { organizationSchema } from "@/lib/schema";
+
+const GA_ID = "G-5P0S8HG964";
 
 const bungee = Bungee({
   variable: "--font-display",
@@ -62,6 +65,7 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <Footer />
       </body>
+      <GoogleAnalytics gaId={GA_ID} />
     </html>
   );
 }
