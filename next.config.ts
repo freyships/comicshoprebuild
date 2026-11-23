@@ -3,21 +3,22 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   trailingSlash: true,
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "comicbookstores.co",
-        pathname: "/wp-content/uploads/**",
-      },
-      {
-        protocol: "https",
-        hostname: "emqchoyebasrvokttjaw.supabase.co",
-        pathname: "/storage/v1/object/public/**",
-      },
-    ],
+    // Photos are served from Cloudflare R2 (media.comicbookstores.co) in
+    // pre-made 480px and 960px versions. See src/lib/image-loader.ts.
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.ts",
+    deviceSizes: [480, 960, 1600],
+    imageSizes: [],
   },
   async redirects() {
     return [
+      // www -> apex (Vercel did this at the edge; on Cloudflare the app does it)
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.comicbookstores.co" }],
+        destination: "https://comicbookstores.co/:path*",
+        permanent: true,
+      },
       // Legacy WordPress / GeoDirectory listing URLs → state hub
       { source: "/listing/:slug*", destination: "/find-comic-shops-by-state/", permanent: true },
       { source: "/place/:slug*", destination: "/find-comic-shops-by-state/", permanent: true },
@@ -37,3 +38,6 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+initOpenNextCloudflareForDev();

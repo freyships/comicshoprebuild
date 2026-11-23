@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import { fetchAllListings } from "@/lib/queries";
 import { breadcrumbSchema, itemListSchema } from "@/lib/schema";
 import { toStateUrl } from "@/lib/state-slugs";
@@ -21,9 +20,9 @@ interface StateRow {
 }
 
 export default async function FindByStatePage() {
-  const { data } = await supabase.rpc("get_states_with_counts");
-
-  let states: StateRow[] = data ?? [];
+  // (The old code first tried a database function that never existed, then fell
+  // back to counting listings. Only the fallback ever ran, so that's what remains.)
+  let states: StateRow[] = [];
   if (states.length === 0) {
     const raw = await fetchAllListings("state, state_slug");
     const map = new Map<string, StateRow>();
