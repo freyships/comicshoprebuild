@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { allListings, listingsForState } from "@/lib/listings";
 import { fetchAllListings } from "@/lib/queries";
 import type { Listing } from "@/lib/types";
 import { toStateUrl, fromStateUrl } from "@/lib/state-slugs";
@@ -36,10 +36,11 @@ export async function generateMetadata({
   if (!dbSlug) return {};
 
   // Pull state name + per-city counts in one query
-  const { data: rows } = await supabase
-    .from("listings")
-    .select("state, city")
-    .eq("state_slug", dbSlug);
+  // Same rows, in the same (unsorted, database row) order the old query returned.
+  // Order matters: tied city counts keep first-seen order in the top-3 below.
+  const rows = allListings()
+    .filter((l) => l.state_slug === dbSlug)
+    .map((l) => ({ state: l.state, city: l.city }));
 
   if (!rows || rows.length === 0) return {};
 
@@ -99,23 +100,7 @@ export default async function StatePillarPage({
   const dbSlug = fromStateUrl(stateSlug);
   if (!dbSlug) notFound();
 
-  const PAGE_SIZE = 1000;
-  const all: Listing[] = [];
-  let from = 0;
-  while (true) {
-    const { data, error } = await supabase
-      .from("listings")
-      .select("*")
-      .eq("state_slug", dbSlug)
-      .order("city", { ascending: true })
-      .order("name", { ascending: true })
-      .range(from, from + PAGE_SIZE - 1);
-    if (error) throw error;
-    if (!data || data.length === 0) break;
-    all.push(...(data as Listing[]));
-    if (data.length < PAGE_SIZE) break;
-    from += PAGE_SIZE;
-  }
+  const all: Listing[] = listingsForState(dbSlug);
 
   if (all.length === 0) notFound();
 

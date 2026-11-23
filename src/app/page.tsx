@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { allListings } from "@/lib/listings";
 import { homeMetadata } from "@/lib/seo";
 import { HomeSearch } from "@/components/HomeSearch";
 
@@ -17,9 +17,7 @@ const TOP_STATES = [
 ];
 
 export default async function HomePage() {
-  const { count } = await supabase
-    .from("listings")
-    .select("*", { count: "exact", head: true });
+  const count = allListings().length;
 
   const total = count?.toLocaleString() ?? "2,000";
 

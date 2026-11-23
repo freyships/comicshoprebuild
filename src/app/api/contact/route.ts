@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+
+type D1Like = { prepare(q: string): { bind(...v: unknown[]): { run(): Promise<unknown> } } };
 
 const TO_EMAIL = "comicbookstorefinder@gmail.com";
 
@@ -82,14 +84,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // Always store the submission in Supabase (source of truth)
-    const { error: dbError } = await supabase.from("contact_submissions").insert({
-      name,
-      email,
-      subject,
-      message,
-    });
-    if (dbError) {
+    // Always store the submission (Cloudflare D1, table contact_submissions)
+    try {
+      const { env } = await getCloudflareContext({ async: true });
+      const db = (env as unknown as { DB: D1Like }).DB;
+      await db
+        .prepare("INSERT INTO contact_submissions (name, email, subject, message) VALUES (?, ?, ?, ?)")
+        .bind(String(name), String(email), String(subject), String(message))
+        .run();
+    } catch (dbError) {
       console.error("contact form db insert failed:", dbError);
     }
 
