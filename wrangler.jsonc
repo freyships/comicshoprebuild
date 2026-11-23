@@ -8,6 +8,11 @@
   "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "comicbookstores" }],
   // Contact form messages (table contact_submissions, see migrations/).
   "d1_databases": [{ "binding": "DB", "database_name": "comicbookstores", "database_id": "bbfc3909-bac0-4c14-b800-bc4d2ee9f784" }],
-  "workers_dev": true,
+  "routes": [
+    { "pattern": "comicbookstores.co", "custom_domain": true },
+    { "pattern": "www.comicbookstores.co", "custom_domain": true }
+  ],
+  "workers_dev": false,
+  "preview_urls": false,
   "observability": { "enabled": true }
 }

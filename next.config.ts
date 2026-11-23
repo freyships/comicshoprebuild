@@ -12,13 +12,6 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // www -> apex (Vercel did this at the edge; on Cloudflare the app does it)
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "www.comicbookstores.co" }],
-        destination: "https://comicbookstores.co/:path*",
-        permanent: true,
-      },
       // Legacy WordPress / GeoDirectory listing URLs → state hub
       { source: "/listing/:slug*", destination: "/find-comic-shops-by-state/", permanent: true },
       { source: "/place/:slug*", destination: "/find-comic-shops-by-state/", permanent: true },
